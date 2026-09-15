@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodBrand AI Growth Studio — Global Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{
+    --brick:#6B2A20;
+    --brick-dark:#4E1E17;
+    --paprika:#C1440E;
+    --gold:#E8A33D;
+    --basil:#2F6B3A;
+    --ink:#2B1B14;
+    --slate:#6B5648;
+    --slate-light:#A2907F;
+    --cream:#FBF6EF;
+    --card:#FFFFFF;
+    --line:#EBDCC9;
+    --danger:#C1121F;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:'Inter',sans-serif;background:var(--cream);color:var(--ink);}
+  h1,h2,h3,.display{font-family:'Fraunces',serif;}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--slate-light);border-radius:4px;}
+
+  .app{display:grid;grid-template-columns:248px 1fr;min-height:100vh;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{background:var(--brick);color:#F4E9DF;padding:24px 16px;display:flex;flex-direction:column;gap:6px;}
+  .brand{display:flex;align-items:center;gap:10px;padding:4px 8px 22px;cursor:pointer;}
+  .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .brand-mark svg{width:20px;height:20px;}
+  .brand-name{font-family:'Fraunces',serif;font-size:15.5px;font-weight:600;line-height:1.15;color:#fff;}
+  .brand-sub{font-size:10.5px;color:#D9BCA9;letter-spacing:.02em;}
+
+  .nav-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:9px;cursor:pointer;color:#EBD7C7;font-size:13.5px;font-weight:500;transition:background .15s ease;}
+  .nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:.9;}
+  .nav-item:hover{background:rgba(255,255,255,.08);}
+  .nav-item.active{background:#F4E9DF;color:var(--brick-dark);}
+  .nav-item.active svg{opacity:1;}
+  .nav-section-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:#C79A82;margin:18px 12px 6px;}
+
+  .sidebar-footer{margin-top:auto;padding:12px;border-top:1px solid rgba(255,255,255,.12);font-size:11.5px;color:#D9BCA9;line-height:1.5;}
+
+  /* ---------- Main ---------- */
+  .main{display:flex;flex-direction:column;min-width:0;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;border-bottom:1px solid var(--line);background:var(--card);}
+  .brand-picker{display:flex;align-items:center;gap:10px;padding:7px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;font-weight:500;color:var(--ink);cursor:pointer;background:var(--cream);}
+  .brand-picker .dot{width:8px;height:8px;border-radius:50%;background:var(--basil);}
+  .topbar-right{display:flex;align-items:center;gap:18px;}
+  .env-tag{font-size:10.5px;font-weight:600;letter-spacing:.05em;color:var(--paprika);background:#FBEAE0;padding:4px 9px;border-radius:20px;}
+  .avatar{width:32px;height:32px;border-radius:50%;background:var(--gold);color:var(--brick-dark);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;font-family:'Fraunces',serif;}
+
+  .content{padding:32px 36px 60px;overflow-y:auto;}
+  .page{display:none;}
+  .page.active{display:block;animation:fadein .25s ease;}
+  @keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+  .page-head{margin-bottom:26px;}
+  .page-eyebrow{font-size:12.5px;color:var(--paprika);font-weight:600;margin-bottom:4px;}
+  .page-title{font-size:26px;font-weight:600;margin:0 0 6px;color:var(--brick-dark);}
+  .page-desc{font-size:14px;color:var(--slate);max-width:640px;line-height:1.5;margin:0;}
+
+  /* cards & grid */
+  .grid{display:grid;gap:18px;}
+  .grid-4{grid-template-columns:repeat(4,1fr);}
+  .grid-2{grid-template-columns:1.3fr 1fr;}
+  .grid-3{grid-template-columns:repeat(3,1fr);}
+  .grid-5{grid-template-columns:repeat(5,1fr);}
+  @media(max-width:1100px){.grid-4,.grid-3,.grid-5{grid-template-columns:repeat(2,1fr);}.grid-2{grid-template-columns:1fr;}}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px;}
+  .card h3{margin:0 0 4px;font-size:15px;font-weight:600;color:var(--ink);}
+  .card .hint{font-size:12px;color:var(--slate-light);margin-bottom:14px;}
+
+  .kpi-value{font-family:'Fraunces',serif;font-size:30px;font-weight:600;color:var(--brick-dark);line-height:1;margin:6px 0 6px;}
+  .kpi-label{font-size:12.5px;color:var(--slate);font-weight:500;}
+  .kpi-delta{font-size:11.5px;font-weight:600;color:var(--basil);display:inline-flex;align-items:center;gap:4px;margin-top:2px;}
+
+  .activity-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;}
+  .activity-item{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);}
+  .activity-item:last-child{border-bottom:none;}
+  .activity-dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex-shrink:0;}
+  .activity-text{font-size:13px;color:var(--ink);line-height:1.45;}
+  .activity-time{font-size:11.5px;color:var(--slate-light);margin-top:2px;}
+
+  .tag{display:inline-flex;align-items:center;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:20px;background:#F1EAE0;color:var(--slate);}
+  .tag.pos{background:#E7F1E6;color:var(--basil);}
+  .tag.neg{background:#FBE7E2;color:var(--danger);}
+  .tag.neu{background:#FCF1DD;color:#9A6B1E;}
+
+  .review-item{padding:14px 0;border-bottom:1px solid var(--line);}
+  .review-item:last-child{border-bottom:none;}
+  .review-item p{margin:8px 0 0;font-size:13px;color:var(--ink);line-height:1.5;}
+
+  .topic-tags{display:flex;flex-wrap:wrap;gap:8px;}
+
+  /* form */
+  label{display:block;font-size:12.5px;font-weight:600;color:var(--slate);margin-bottom:6px;}
+  select, input[type=text], input[type=range]{width:100%;font-family:'Inter',sans-serif;font-size:13.5px;padding:9px 11px;border:1px solid var(--line);border-radius:9px;background:var(--cream);color:var(--ink);}
+  .field{margin-bottom:16px;}
+  .btn{display:inline-flex;align-items:center;gap:8px;background:var(--paprika);color:#fff;border:none;padding:11px 20px;border-radius:9px;font-size:13.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
+  .btn:hover{background:#A83A0C;}
+  .btn.secondary{background:transparent;border:1px solid var(--line);color:var(--ink);}
+  .btn.approve{background:var(--basil);}
+  .btn.reject{background:transparent;color:var(--danger);border:1px solid #E9B7AE;padding:7px 14px;font-size:12.5px;}
+  .btn.approve.small{padding:7px 14px;font-size:12.5px;}
+  .btn:disabled{opacity:.55;cursor:default;}
+
+  .spinner{width:14px;height:14px;border-radius:50%;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;animation:spin .7s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .copilot-output{margin-top:20px;border-top:1px dashed var(--line);padding-top:20px;display:none;}
+  .copilot-output.show{display:block;animation:fadein .3s ease;}
+  .strategy-line{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--brick-dark);margin:0 0 12px;line-height:1.4;}
+  .variant{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+  .variant-label{font-size:10.5px;font-weight:700;letter-spacing:.04em;color:var(--paprika);margin-bottom:4px;}
+  .variant-text{font-size:13.5px;color:var(--ink);}
+
+  .lang-tabs{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  .lang-tab{padding:8px 16px;border-radius:20px;font-size:12.5px;font-weight:600;border:1px solid var(--line);cursor:pointer;color:var(--slate);background:var(--cream);}
+  .lang-tab.active{background:var(--brick);color:#fff;border-color:var(--brick);}
+  .locale-preview{background:var(--cream);border:1px solid var(--line);border-radius:12px;padding:22px;}
+  .locale-preview .headline{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--brick-dark);margin:0 0 8px;}
+  .locale-preview .body{font-size:13.5px;color:var(--ink);line-height:1.6;margin:0;}
+  .locale-meta{font-size:11.5px;color:var(--slate-light);margin-top:12px;}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;font-size:11.5px;text-transform:none;color:var(--slate);font-weight:600;padding:10px 12px;border-bottom:2px solid var(--line);}
+  td{padding:12px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+
+  .status-pill{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;white-space:nowrap;}
+  .status-pill.approved{background:#E7F1E6;color:var(--basil);}
+  .status-pill.flagged{background:#FBE7E2;color:var(--danger);}
+  .status-pill.pending{background:#FCF1DD;color:#9A6B1E;}
+
+  .chart-wrap{position:relative;height:230px;}
+  .chart-wrap.small{height:180px;}
+
+  .banner{display:flex;align-items:center;gap:14px;background:var(--brick);color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:22px;}
+  .banner svg{width:26px;height:26px;flex-shrink:0;}
+  .banner b{font-family:'Fraunces',serif;font-weight:600;}
+
+  /* ---------- Home / landing ---------- */
+  .hero{background:var(--brick);color:#F4E9DF;border-radius:18px;padding:44px 40px;margin-bottom:26px;position:relative;overflow:hidden;}
+  .hero-eyebrow{font-size:12.5px;font-weight:600;letter-spacing:.03em;color:var(--gold);margin-bottom:10px;}
+  .hero h1{font-size:34px;line-height:1.18;font-weight:600;color:#fff;margin:0 0 14px;max-width:640px;}
+  .hero p{font-size:14.5px;color:#E9D6C6;line-height:1.6;max-width:520px;margin:0 0 24px;}
+  .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;}
+  .hero .btn.secondary{border-color:rgba(255,255,255,.35);color:#fff;}
+  .hero-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:26px;}
+  .hero-stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+  .hero-stat .kpi-value{font-size:26px;}
+  @media(max-width:900px){.hero-stats{grid-template-columns:1fr;}}
+
+  .feature-card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;cursor:pointer;transition:border-color .15s ease;}
+  .feature-card:hover{border-color:var(--paprika);}
+  .feature-card .feature-tag{font-size:11px;font-weight:700;color:var(--paprika);margin-bottom:8px;display:block;}
+  .feature-card h3{font-size:14.5px;margin:0 0 6px;}
+  .feature-card p{font-size:12.5px;color:var(--slate);line-height:1.5;margin:0;}
+
+  /* ---------- Compliance ---------- */
+  .compliance-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--card);}
+  .compliance-card .market-name{font-family:'Fraunces',serif;font-size:15.5px;font-weight:600;color:var(--brick-dark);margin-bottom:2px;}
+  .compliance-card .regulator{font-size:11.5px;color:var(--paprika);font-weight:600;margin-bottom:10px;}
+  .compliance-card p{font-size:12.5px;color:var(--slate);line-height:1.55;margin:0;}
+  .disclaimer-note{font-size:11.5px;color:var(--slate-light);line-height:1.6;margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);}
+
+  /* ---------- Integrations ---------- */
+  .connector-card{border:1px solid var(--line);border-radius:14px;padding:20px 22px;background:var(--card);margin-bottom:18px;}
+  .connector-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .connector-title{display:flex;align-items:center;gap:12px;}
+  .connector-icon{width:38px;height:38px;border-radius:10px;background:var(--cream);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .connector-icon svg{width:20px;height:20px;color:var(--paprika);}
+  .connector-title h3{margin:0;font-size:15.5px;}
+  .connector-title .connector-sub{font-size:11.5px;color:var(--slate-light);}
+  .connector-actions{display:flex;align-items:center;gap:10px;}
+  .connector-note{font-size:11.5px;color:var(--slate-light);margin-top:10px;}
+
+  /* ---------- Market trends ---------- */
+  .region-card{border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--card);}
+  .region-card h3{font-size:14.5px;margin:0 0 6px;}
+  .region-card p{font-size:12.5px;color:var(--slate);line-height:1.5;margin:0 0 10px;}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="brand" data-page="home" onclick="goToPage('home')">
+      <div class="brand-mark"><svg viewBox="0 0 100 100" fill="none" stroke="#4E1E17" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><circle cx="50" cy="58" r="30"/><path d="M50,28 L50,16"/><path d="M50,28 L38,18"/><path d="M50,28 L62,18"/></svg></div>
+      <div>
+        <div class="brand-name">FoodBrand AI<br/>Growth Studio</div>
+      </div>
+    </div>
+
+    <div class="nav-section-label">Studio</div>
+    <div class="nav-item" data-page="home" onclick="goToPage('home')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>
+      Home
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+    <div class="nav-item active" data-page="overview" onclick="goToPage('overview')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Overview
+    </div>
+    <div class="nav-item" data-page="trends" onclick="goToPage('trends')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></svg>
+      Market Trends
+    </div>
+    <div class="nav-item" data-page="intelligence" onclick="goToPage('intelligence')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      Consumer Intelligence
+    </div>
+
+    <div class="nav-section-label">Create</div>
+    <div class="nav-item" data-page="copilot" onclick="goToPage('copilot')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l1.6 4.3L18 9l-4.4 1.7L12 15l-1.6-4.3L6 9l4.4-1.7z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/></svg>
+      Campaign Copilot
+    </div>
+    <div class="nav-item" data-page="regionalization" onclick="goToPage('regionalization')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c3 3.2 3 14.8 0 18"/><path d="M12 3c-3 3.2-3 14.8 0 18"/></svg>
+      Regionalization
+    </div>
+
+    <div class="nav-section-label">Trust &amp; ops</div>
+    <div class="nav-item" data-page="governance" onclick="goToPage('governance')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4.5-3 7.7-7 9-4-1.3-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg>
+      Compliance
+    </div>
+    <div class="nav-item" data-page="integrations" onclick="goToPage('integrations')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v6M15 3v6M4 9h16l-1.5 5.5a3 3 0 01-2.9 2.2H8.4a3 3 0 01-2.9-2.2z"/><path d="M9 16.7V21M15 16.7V21"/></svg>
+      Integrations
+    </div>
+    <div class="nav-item" data-page="analytics" onclick="goToPage('analytics')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
+      Activation &amp; Analytics
+    </div>
+
+    <div class="sidebar-footer">Prototype build — illustrative data only, for concept review ahead of a production pilot.</div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="brand-picker"><span class="dot"></span> Meridian Grain Co. — Global Snacking Portfolio <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="topbar-right">
+        <span class="env-tag">PILOT WORKSPACE</span>
+        <div class="avatar">AM</div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- HOME -->
+      <section class="page" id="page-home">
+        <div class="hero">
+          <div class="hero-eyebrow">FoodBrand AI Growth Studio</div>
+          <h1>Run food and beverage growth marketing across every market you sell in — from one workspace.</h1>
+          <p>Turn a single brief into positioning, creative and locally compliant campaigns for each country on your shelf, with consumer signal, regulatory review and channel performance built in from day one.</p>
+          <div class="hero-ctas">
+            <button class="btn" onclick="goToPage('overview')">Enter the workspace</button>
+            <button class="btn secondary" onclick="goToPage('governance')">See how compliance works</button>
+          </div>
+        </div>
+
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="kpi-label">Global healthy-snack market</div>
+            <div class="kpi-value">$185B</div>
+            <div class="kpi-delta">Projected by 2034, up from roughly $108B in 2025</div>
+          </div>
+          <div class="hero-stat">
+            <div class="kpi-label">Protein snack category growth</div>
+            <div class="kpi-value">11.2%</div>
+            <div class="kpi-delta">Annual growth rate through 2026</div>
+          </div>
+          <div class="hero-stat">
+            <div class="kpi-label">Regulatory frameworks on day one</div>
+            <div class="kpi-value">6 markets</div>
+            <div class="kpi-delta">US, EU, UK, Brazil, GCC and China</div>
+          </div>
+        </div>
+
+        <div class="page-head">
+          <div class="page-eyebrow">What's inside</div>
+          <h2 class="page-title" style="font-size:20px;">Every step from brief to shelf, in one place</h2>
+        </div>
+        <div class="grid grid-3">
+          <div class="feature-card" onclick="goToPage('trends')">
+            <span class="feature-tag">Market Trends</span>
+            <h3>See what shoppers are searching for</h3>
+            <p>Google Trends-style search interest and category growth, broken down by region.</p>
+          </div>
+          <div class="feature-card" onclick="goToPage('intelligence')">
+            <span class="feature-tag">Consumer Intelligence</span>
+            <h3>Turn reviews into direction</h3>
+            <p>Reviews, social comments and Q&amp;A across markets, synthesized into your next brief.</p>
+          </div>
+          <div class="feature-card" onclick="goToPage('copilot')">
+            <span class="feature-tag">Campaign Copilot</span>
+            <h3>Draft a strategy in seconds</h3>
+            <p>Positioning, channel mix and creative variants generated from a short brief.</p>
+          </div>
+          <div class="feature-card" onclick="goToPage('regionalization')">
+            <span class="feature-tag">Regionalization</span>
+            <h3>One brief, every language</h3>
+            <p>Preview how approved creative adapts across the languages you sell in.</p>
+          </div>
+          <div class="feature-card" onclick="goToPage('governance')">
+            <span class="feature-tag">Compliance</span>
+            <h3>Nothing ships without sign-off</h3>
+            <p>Claims checked against product facts and the rules of each destination market.</p>
+          </div>
+          <div class="feature-card" onclick="goToPage('integrations')">
+            <span class="feature-tag">Integrations</span>
+            <h3>Connect your existing stack</h3>
+            <p>Adobe Analytics, Google Trends and your ERP/CRM, in one growth workspace.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- OVERVIEW -->
+      <section class="page active" id="page-overview">
+        <div class="page-head">
+          <div class="page-eyebrow">Overview</div>
+          <h1 class="page-title">Good morning, Alex</h1>
+          <p class="page-desc">Here's how your portfolio is performing across nine markets this week.</p>
+        </div>
+
+        <div class="grid grid-4" style="margin-bottom:18px;">
+          <div class="card">
+            <div class="kpi-label">Avg. campaign cycle time</div>
+            <div class="kpi-value">2.3 hrs</div>
+            <div class="kpi-delta">↓ from ~22 days pre-pilot</div>
+          </div>
+          <div class="card">
+            <div class="kpi-label">Live campaigns</div>
+            <div class="kpi-value">22</div>
+            <div class="kpi-delta">across 9 markets, 7 channels</div>
+          </div>
+          <div class="card">
+            <div class="kpi-label">Claims auto-validated</div>
+            <div class="kpi-value">97.8%</div>
+            <div class="kpi-delta">4 flagged for regional review</div>
+          </div>
+          <div class="card">
+            <div class="kpi-label">Pipeline revenue influenced</div>
+            <div class="kpi-value">$2.4M</div>
+            <div class="kpi-delta">this quarter</div>
+          </div>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Cycle time, before vs. after</h3>
+            <div class="hint">Hours from brief to published asset, last 6 briefs</div>
+            <div class="chart-wrap"><canvas id="chartCycle"></canvas></div>
+          </div>
+          <div class="card">
+            <h3>Recent activity</h3>
+            <div class="hint">Live feed across your workspace</div>
+            <ul class="activity-list" id="activityList"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MARKET TRENDS -->
+      <section class="page" id="page-trends">
+        <div class="page-head">
+          <div class="page-eyebrow">Market Trends</div>
+          <h1 class="page-title">What the world is searching for</h1>
+          <p class="page-desc">Global and regional search interest, layered with category growth context, to guide what you brief next.</p>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <h3>Search interest, trailing 12 months</h3>
+            <div class="hint">Illustrative index modeled on public search-trend reporting · connect Google Trends for live data</div>
+            <div class="chart-wrap"><canvas id="chartTrendsGlobal"></canvas></div>
+          </div>
+          <div class="card">
+            <h3>Category growth outlook</h3>
+            <div class="hint">Public market-research estimates</div>
+            <div class="grid" style="grid-template-columns:1fr 1fr;gap:14px;">
+              <div>
+                <div class="kpi-label">Healthy snacks, global</div>
+                <div class="kpi-value" style="font-size:22px;">$185B</div>
+                <div class="kpi-delta">by 2034, ~6.2% CAGR from $108B in 2025</div>
+              </div>
+              <div>
+                <div class="kpi-label">Protein snacks, global</div>
+                <div class="kpi-value" style="font-size:22px;">$8.9B</div>
+                <div class="kpi-delta">by 2030, ~11% CAGR through 2026</div>
+              </div>
+            </div>
+            <div class="topic-tags" style="margin-top:16px;">
+              <span class="tag">protein snacks</span>
+              <span class="tag">clean label</span>
+              <span class="tag">gut health</span>
+              <span class="tag">plant-based</span>
+              <span class="tag">on-the-go format</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Regional read</h3>
+          <div class="hint">What's driving search and shelf demand, market by market — illustrative summary</div>
+          <div class="grid grid-5">
+            <div class="region-card">
+              <h3>North America</h3>
+              <p>Largest share of global healthy-snack revenue, led by protein and low-sugar positioning.</p>
+              <span class="tag">high-protein</span>
+            </div>
+            <div class="region-card">
+              <h3>Europe</h3>
+              <p>Clean-label claims and verified sustainability credentials are becoming purchase criteria, not marketing extras.</p>
+              <span class="tag">clean label</span>
+            </div>
+            <div class="region-card">
+              <h3>Asia-Pacific</h3>
+              <p>Fastest-growing region for healthy snacking, with quick-commerce as a major discovery channel.</p>
+              <span class="tag">quick-commerce</span>
+            </div>
+            <div class="region-card">
+              <h3>Latin America</h3>
+              <p>Flavor-led indulgence and bold, locally inspired profiles perform well alongside health claims.</p>
+              <span class="tag">bold flavor</span>
+            </div>
+            <div class="region-card">
+              <h3>Middle East</h3>
+              <p>Functional and halal-certified snacking is gaining share, with strong quick-commerce delivery demand.</p>
+              <span class="tag">halal / functional</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CONSUMER INTELLIGENCE -->
+      <section class="page" id="page-intelligence">
+        <div class="page-head">
+          <div class="page-eyebrow">Consumer Intelligence</div>
+          <h1 class="page-title">What consumers are telling you</h1>
+          <p class="page-desc">Reviews, social comments and quick-commerce Q&amp;A across markets, synthesized into direction for the next brief.</p>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>Sentiment, last 30 days</h3>
+            <div class="hint">2,940 reviews and comments across 9 markets</div>
+            <div class="chart-wrap small"><canvas id="chartSentiment"></canvas></div>
+            <div class="topic-tags" style="margin-top:16px;">
+              <span class="tag">protein content</span>
+              <span class="tag">pack size</span>
+              <span class="tag">price vs. competitor</span>
+              <span class="tag">on-the-go format</span>
+              <span class="tag">crunch texture</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Signals worth acting on</h3>
+            <div class="hint">Synthesized from raw reviews — not verbatim quotes</div>
+            <div class="review-item">
+              <span class="tag pos">Positive</span>
+              <p>Crunch texture comes up repeatedly across US and UK reviews as the reason shoppers prefer this bar over competitor brands.</p>
+            </div>
+            <div class="review-item">
+              <span class="tag neu">Actionable</span>
+              <p>Shoppers in Brazil and the UAE are asking for smaller, single-serve formats that aren't yet listed on quick-commerce.</p>
+            </div>
+            <div class="review-item">
+              <span class="tag neg">Needs attention</span>
+              <p>A cluster of reviews on Ocado this month flags inconsistent sweetness across batches — worth a QA check.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- CAMPAIGN COPILOT -->
+      <section class="page" id="page-copilot">
+        <div class="page-head">
+          <div class="page-eyebrow">Campaign Copilot</div>
+          <h1 class="page-title">Turn a brief into a campaign strategy</h1>
+          <p class="page-desc">Fill in the brief basics — Copilot proposes positioning, channel mix and creative direction in seconds, for the market you pick.</p>
+        </div>
+
+        <div class="grid grid-2">
+          <div class="card">
+            <h3>New brief</h3>
+            <div class="field">
+              <label>SKU</label>
+              <select id="skuSelect">
+                <option>Protein Crunch Bar — Original</option>
+                <option>Baked Grain Puffs</option>
+                <option>Protein Trail Mix</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Market</label>
+              <select id="marketSelect">
+                <option>United States</option>
+                <option>United Kingdom</option>
+                <option>Germany</option>
+                <option>Brazil</option>
+                <option>United Arab Emirates</option>
+                <option>India</option>
+                <option>Australia</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Objective</label>
+              <select id="objectiveSelect">
+                <option>Quick-commerce push</option>
+                <option>New launch awareness</option>
+                <option>Seasonal campaign</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Budget: <span id="budgetVal">$40K</span></label>
+              <input type="range" id="budgetRange" min="10" max="150" step="5" value="40">
+            </div>
+            <button class="btn" id="generateBtn"><span id="generateBtnLabel">Generate campaign strategy</span></button>
+          </div>
+
+          <div class="card">
+            <h3>Copilot output</h3>
+            <div class="hint" id="outputHint">Submit a brief to see a generated strategy here.</div>
+            <div class="copilot-output" id="copilotOutput">
+              <p class="strategy-line" id="strategyLine"></p>
+              <div class="variant"><div class="variant-label">CHANNEL MIX</div><div class="variant-text" id="channelMixText"></div></div>
+              <div class="variant"><div class="variant-label">CREATIVE VARIANT A</div><div class="variant-text" id="variantA"></div></div>
+              <div class="variant"><div class="variant-label">CREATIVE VARIANT B</div><div class="variant-text" id="variantB"></div></div>
+              <button class="btn secondary" style="margin-top:4px;" onclick="goToPage('governance')">Send to Compliance for review</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- REGIONALIZATION -->
+      <section class="page" id="page-regionalization">
+        <div class="page-head">
+          <div class="page-eyebrow">Regionalization</div>
+          <h1 class="page-title">One brief, every market</h1>
+          <p class="page-desc">Preview how the approved creative adapts across languages before it goes to Compliance.</p>
+        </div>
+
+        <div class="card">
+          <div class="lang-tabs" id="langTabs">
+            <div class="lang-tab active" data-lang="en">English (US)</div>
+            <div class="lang-tab" data-lang="es">Spanish (LatAm)</div>
+            <div class="lang-tab" data-lang="pt">Portuguese (Brazil)</div>
+            <div class="lang-tab" data-lang="de">German</div>
+            <div class="lang-tab" data-lang="ar">Arabic (GCC)</div>
+            <div class="lang-tab" data-lang="hi">Hindi (India)</div>
+          </div>
+          <div class="locale-preview">
+            <p class="headline" id="localeHeadline"></p>
+            <p class="body" id="localeBody"></p>
+            <div class="locale-meta" id="localeMeta"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMPLIANCE / GOVERNANCE -->
+      <section class="page" id="page-governance">
+        <div class="page-head">
+          <div class="page-eyebrow">Compliance</div>
+          <h1 class="page-title">Nothing publishes without a local sign-off</h1>
+          <p class="page-desc">Every consumer-facing claim is checked against Brand Brain product facts and the regulatory rules of its destination market before it reaches this queue.</p>
+        </div>
+
+        <div class="card" style="margin-bottom:18px;">
+          <h3>Regulatory frameworks by market</h3>
+          <div class="hint">Built into this workspace so Copilot flags issues before a claim ever reaches a human</div>
+          <div class="grid grid-3">
+            <div class="compliance-card">
+              <div class="market-name">United States</div>
+              <div class="regulator">FDA</div>
+              <p>Structure/function claims are allowed without pre-approval if paired with the required disclaimer. Nine major allergens must be declared, and several synthetic dyes are being phased out through 2026.</p>
+            </div>
+            <div class="compliance-card">
+              <div class="market-name">European Union</div>
+              <div class="regulator">EFSA / Regulation 1169/2011</div>
+              <p>Only claims on the EU's authorized register are permitted. Fourteen allergens must be visually emphasized in the ingredients list, and new packaging and green-claims rules phase in through 2026.</p>
+            </div>
+            <div class="compliance-card">
+              <div class="market-name">United Kingdom</div>
+              <div class="regulator">Food Standards Agency</div>
+              <p>Allergen and nutrition rules build on the same base as the EU, with separate GB-specific claims guidance and mandatory allergen labeling for food packed on site.</p>
+            </div>
+            <div class="compliance-card">
+              <div class="market-name">Brazil</div>
+              <div class="regulator">ANVISA</div>
+              <p>Front-of-pack warning symbols are required on products high in added sugar, saturated fat or sodium under the national food-classification system.</p>
+            </div>
+            <div class="compliance-card">
+              <div class="market-name">GCC / Middle East</div>
+              <div class="regulator">GSO standards</div>
+              <p>Halal certification and bilingual Arabic/English labeling are generally required for imported and shelf-stable food products.</p>
+            </div>
+            <div class="compliance-card">
+              <div class="market-name">China</div>
+              <div class="regulator">SAMR / Food Safety Law</div>
+              <p>Labeling and distribution sit under close supervision, with mandatory disclosure of genetically modified ingredients and import safety certificates for certain categories.</p>
+            </div>
+          </div>
+          <div class="disclaimer-note">This summary is illustrative and simplified for concept review. It is not legal advice — always confirm current requirements with local regulatory counsel before publishing in a new market.</div>
+        </div>
+
+        <div class="card">
+          <h3>Compliance queue</h3>
+          <div class="hint">Auto-validated claims still route here for final, market-specific approval</div>
+          <table>
+            <thead><tr><th>Claim</th><th>SKU</th><th>Market</th><th>Flag</th><th>Status</th><th></th></tr></thead>
+            <tbody id="governanceRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- INTEGRATIONS -->
+      <section class="page" id="page-integrations">
+        <div class="page-head">
+          <div class="page-eyebrow">Integrations</div>
+          <h1 class="page-title">Connect the tools you already run on</h1>
+          <p class="page-desc">Here's what each connection looks like once it's live. The figures below are illustrative sample data, not a real feed.</p>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div class="connector-title">
+              <div class="connector-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-13"/></svg></div>
+              <div>
+                <h3>Adobe Analytics</h3>
+                <div class="connector-sub">Web and app behavioral analytics</div>
+              </div>
+            </div>
+            <div class="connector-actions">
+              <span class="tag neu">Sample data</span>
+              <button class="btn secondary" disabled>Connect</button>
+            </div>
+          </div>
+          <div class="grid grid-4">
+            <div><div class="kpi-label">Sessions, US</div><div class="kpi-value" style="font-size:20px;">412K</div></div>
+            <div><div class="kpi-label">Sessions, UK</div><div class="kpi-value" style="font-size:20px;">88K</div></div>
+            <div><div class="kpi-label">Sessions, Brazil</div><div class="kpi-value" style="font-size:20px;">120K</div></div>
+            <div><div class="kpi-label">Blended conversion</div><div class="kpi-value" style="font-size:20px;">2.4%</div></div>
+          </div>
+          <div class="connector-note">Requires your Adobe Analytics credentials to replace sample figures with a live feed.</div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div class="connector-title">
+              <div class="connector-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></div>
+              <div>
+                <h3>Google Trends</h3>
+                <div class="connector-sub">Public search-interest signal</div>
+              </div>
+            </div>
+            <div class="connector-actions">
+              <span class="tag neu">Sample data</span>
+              <button class="btn secondary" disabled>Connect</button>
+            </div>
+          </div>
+          <div class="chart-wrap small"><canvas id="chartTrendsIntegration"></canvas></div>
+          <div class="connector-note">Auto-refreshes weekly once connected, and feeds directly into the Market Trends page.</div>
+        </div>
+
+        <div class="connector-card">
+          <div class="connector-head">
+            <div class="connector-title">
+              <div class="connector-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg></div>
+              <div>
+                <h3>ERP / CRM</h3>
+                <div class="connector-sub">SAP, NetSuite, Salesforce, Dynamics or equivalent</div>
+              </div>
+            </div>
+            <div class="connector-actions">
+              <span class="tag neu">Sample data</span>
+              <button class="btn secondary" disabled>Connect</button>
+            </div>
+          </div>
+          <table>
+            <thead><tr><th>Region</th><th>SKU stock cover</th><th>Order-to-cash</th><th>Distributor sell-through</th></tr></thead>
+            <tbody>
+              <tr><td>North America</td><td>18 days</td><td>6.2 days</td><td>71%</td></tr>
+              <tr><td>Europe</td><td>24 days</td><td>8.1 days</td><td>64%</td></tr>
+              <tr><td>Latin America</td><td>12 days</td><td>5.4 days</td><td>78%</td></tr>
+              <tr><td>Middle East</td><td>20 days</td><td>7.0 days</td><td>69%</td></tr>
+            </tbody>
+          </table>
+          <div class="connector-note">Requires read access to your ERP/CRM to replace sample figures with live operational data.</div>
+        </div>
+      </section>
+
+      <!-- ANALYTICS -->
+      <section class="page" id="page-analytics">
+        <div class="page-head">
+          <div class="page-eyebrow">Activation &amp; Analytics</div>
+          <h1 class="page-title">See what's working, channel by channel</h1>
+          <p class="page-desc">Performance across every connected channel, feeding the next-best-action for your following brief.</p>
+        </div>
+
+        <div class="grid grid-2" style="margin-bottom:18px;">
+          <div class="card">
+            <h3>Engagement by channel</h3>
+            <div class="hint">Last 7 days, indexed engagement rate</div>
+            <div class="chart-wrap"><canvas id="chartChannels"></canvas></div>
+          </div>
+          <div class="card">
+            <h3>Weekly cycle time trend</h3>
+            <div class="hint">Hours from brief to publish</div>
+            <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Campaign performance</h3>
+          <table>
+            <thead><tr><th>Campaign</th><th>Channel</th><th>Reach</th><th>CTR</th><th>Conversion</th></tr></thead>
+            <tbody>
+              <tr><td>Protein Crunch Relaunch</td><td>Amazon (US)</td><td>1.2M</td><td>2.6%</td><td>0.9%</td></tr>
+              <tr><td>Ramadan Gifting Campaign</td><td>Talabat (UAE)</td><td>180K</td><td>5.4%</td><td>2.8%</td></tr>
+              <tr><td>Grain Puffs Sampling</td><td>Instacart</td><td>96K</td><td>6.1%</td><td>3.4%</td></tr>
+              <tr><td>Trail Mix Launch</td><td>Walmart Connect</td><td>58K</td><td>3.2%</td><td>1.6%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- Navigation ----------
+function goToPage(id){
+  document.querySelectorAll('.nav-item[data-page]').forEach(n=>n.classList.remove('active'));
+  const target = document.querySelector('.nav-item[data-page="'+id+'"]');
+  if(target) target.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.querySelector('.content').scrollTo(0,0);
+}
+document.querySelectorAll('.nav-item[data-page]').forEach(item=>{
+  item.addEventListener('click', ()=> goToPage(item.dataset.page));
+});
+goToPage('home');
+
+// ---------- Chart defaults ----------
+Chart.defaults.font.family = "Inter, sans-serif";
+Chart.defaults.color = "#6B5648";
+const brick="#6B2A20", paprika="#C1440E", gold="#E8A33D", basil="#2F6B3A", line="#EBDCC9";
+
+new Chart(document.getElementById('chartCycle'), {
+  type:'bar',
+  data:{labels:['Brief 1','Brief 2','Brief 3','Brief 4','Brief 5','Brief 6'],
+    datasets:[{label:'Hours to publish',data:[528,336,96,48,3.5,2.3],backgroundColor:paprika,borderRadius:6,maxBarThickness:34}]},
+  options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:line}},x:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartSentiment'), {
+  type:'doughnut',
+  data:{labels:['Positive','Neutral','Negative'],datasets:[{data:[66,23,11],backgroundColor:[basil,gold,'#C1121F'],borderWidth:0}]},
+  options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,font:{size:11.5}}}},cutout:'62%'}
+});
+
+new Chart(document.getElementById('chartChannels'), {
+  type:'bar',
+  data:{labels:['Amazon','Instacart','Walmart Connect','Talabat','Blinkit'],
+    datasets:[{data:[78,72,66,61,84],backgroundColor:brick,borderRadius:6,maxBarThickness:34}]},
+  options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:line}},y:{grid:{display:false}}}}
+});
+
+new Chart(document.getElementById('chartTrend'), {
+  type:'line',
+  data:{labels:['W1','W2','W3','W4','W5','W6','W7','W8'],
+    datasets:[{data:[240,190,120,60,18,6,3.1,2.3],borderColor:paprika,backgroundColor:'rgba(193,68,14,0.08)',fill:true,tension:.35,pointRadius:3,pointBackgroundColor:paprika}]},
+  options:{plugins:{legend:{display:false}},scales:{y:{grid:{color:line}},x:{grid:{display:false}}}}
+});
+
+const trendsData = {
+  labels:['Nov','Dec','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct'],
+  datasets:[
+    {label:'Protein snacks',data:[73,64,58,55,60,62,59,63,66,61,58,60],borderColor:paprika,backgroundColor:'transparent',tension:.35,pointRadius:2},
+    {label:'Clean label',data:[42,44,46,45,50,53,55,54,57,59,58,60],borderColor:basil,backgroundColor:'transparent',tension:.35,pointRadius:2},
+    {label:'Plant-based snacks',data:[38,40,35,33,37,41,39,36,34,38,40,42],borderColor:gold,backgroundColor:'transparent',tension:.35,pointRadius:2},
+  ]
+};
+new Chart(document.getElementById('chartTrendsGlobal'), {
+  type:'line', data: trendsData,
+  options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,font:{size:11}}}},scales:{y:{grid:{color:line},title:{display:true,text:'Search interest index'}},x:{grid:{display:false}}}}
+});
+new Chart(document.getElementById('chartTrendsIntegration'), {
+  type:'line', data: JSON.parse(JSON.stringify(trendsData)),
+  options:{plugins:{legend:{position:'bottom',labels:{boxWidth:10,padding:14,font:{size:11}}}},scales:{y:{grid:{color:line}},x:{grid:{display:false}}}}
+});
+
+// ---------- Activity feed ----------
+const activity = [
+  {c:paprika, t:"EU variant of the Protein Crunch Bar campaign approved and published.", time:"12 min ago"},
+  {c:gold, t:"New brief received: Baked Grain Puffs, North America launch.", time:"1 hr ago"},
+  {c:'#C1121F', t:"Compliance flagged the claim \u201cZero added sugar\u201d for Germany — pending EU claims-register match.", time:"3 hrs ago"},
+  {c:basil, t:"US quick-commerce campaign live on Instacart: click-through up 18% week over week.", time:"5 hrs ago"},
+  {c:brick, t:"Weekly global consumer intelligence digest ready for review.", time:"Yesterday"},
+];
+document.getElementById('activityList').innerHTML = activity.map(a=>`
+  <li class="activity-item">
+    <span class="activity-dot" style="background:${a.c}"></span>
+    <div><div class="activity-text">${a.t}</div><div class="activity-time">${a.time}</div></div>
+  </li>`).join('');
+
+// ---------- Campaign Copilot ----------
+document.getElementById('budgetRange').addEventListener('input', e=>{
+  document.getElementById('budgetVal').textContent = '$'+e.target.value+'K';
+});
+
+const channelByMarket = {
+  'United States':'Amazon + Walmart Connect homepage placement, Instacart retargeting, paid social.',
+  'United Kingdom':'Ocado + Amazon UK sampling, paid social, retargeting on Instagram.',
+  'Germany':'REWE + Amazon.de placement, Instagram and YouTube for awareness.',
+  'Brazil':'Rappi + iFood homepage takeover, WhatsApp catalog push, Instagram retargeting.',
+  'United Arab Emirates':'Noon + Talabat homepage placement, Instagram, in-app push to existing buyers.',
+  'India':'Blinkit + Zepto homepage takeover, WhatsApp catalog push, Instagram retargeting.',
+  'Australia':'Woolworths + Amazon.com.au placement, Instagram and YouTube pre-roll.'
+};
+
+document.getElementById('generateBtn').addEventListener('click', ()=>{
+  const btn = document.getElementById('generateBtn');
+  const label = document.getElementById('generateBtnLabel');
+  const sku = document.getElementById('skuSelect').value;
+  const market = document.getElementById('marketSelect').value;
+  const objective = document.getElementById('objectiveSelect').value;
+
+  btn.disabled = true;
+  label.innerHTML = '<span class="spinner"></span> Generating…';
+
+  setTimeout(()=>{
+    document.getElementById('strategyLine').textContent =
+      `Position ${sku} in ${market} around "everyday crunch, real grain" — lead with texture and clean-label protein, not just health claims.`;
+    document.getElementById('channelMixText').textContent = channelByMarket[market] || 'Instagram + YouTube for awareness, owned website landing page, retail-media sampling placement.';
+    document.getElementById('variantA').textContent =
+      `"${sku.split(' —')[0]} — the crunch that's actually good for you."`;
+    document.getElementById('variantB').textContent =
+      `"Real grain. Real crunch. Zero compromise." — built for the ${market} snacking moment.`;
+    document.getElementById('outputHint').textContent = `Generated in 2.1 seconds · routes to ${market} Compliance before publish`;
+    document.getElementById('copilotOutput').classList.add('show');
+    btn.disabled = false;
+    label.textContent = 'Regenerate strategy';
+  }, 1100);
+});
+
+// ---------- Regionalization ----------
+const locales = {
+  en: {h:"Real grain. Real crunch.", b:"Protein Crunch Bar — baked, not fried, with 7g of protein per bar. Now on Amazon and Instacart.", m:"English (US) · United States"},
+  es: {h:"Grano real. Crujido real.", b:"Barra Protein Crunch — horneada, no frita, con 7 g de proteína por barra. Ya disponible en Rappi y Mercado Libre.", m:"Spanish (LatAm) · Mexico, Colombia, Argentina"},
+  pt: {h:"Grão de verdade. Crocância de verdade.", b:"Barra Protein Crunch — assada, não frita, com 7g de proteína por barra. Já disponível na Rappi e no iFood.", m:"Portuguese (Brazil) · Brazil"},
+  de: {h:"Echtes Korn. Echter Crunch.", b:"Protein Crunch Bar — gebacken, nicht frittiert, mit 7g Protein pro Riegel. Jetzt bei Amazon und REWE erhältlich.", m:"German · Germany, Austria"},
+  ar: {h:"حبوب حقيقية. قرمشة حقيقية.", b:"بار بروتين كرنش — مخبوز وليس مقلياً، ويحتوي على 7 غرامات من البروتين لكل بار. متوفر الآن على نون وتطبيق طلبات.", m:"Arabic (GCC) · UAE, Saudi Arabia"},
+  hi: {h:"असली अनाज, असली कुरकुरापन।", b:"प्रोटीन क्रंच बार — बेक्ड, तला हुआ नहीं, हर बार में 7 ग्राम प्रोटीन के साथ। अब ब्लिंकिट और ज़ेप्टो पर उपलब्ध।", m:"Hindi · India"},
+};
+document.querySelectorAll('.lang-tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const d = locales[tab.dataset.lang];
+    document.getElementById('localeHeadline').textContent = d.h;
+    document.getElementById('localeBody').textContent = d.b;
+    document.getElementById('localeMeta').textContent = d.m + ' · auto-generated, pending regional Compliance review';
+  });
+});
+document.querySelector('.lang-tab.active').click();
+
+// ---------- Compliance ----------
+const claims = [
+  {claim:"“Zero added sugar”", sku:"Baked Grain Puffs", market:"Germany (EU)", flag:"Not yet matched to an EU-authorized claim wording", status:"flagged"},
+  {claim:"“7g protein per bar”", sku:"Protein Crunch Bar", market:"United States", flag:"Matches lab report v3, disclaimer applied", status:"approved"},
+  {claim:"“No.1 protein bar”", sku:"Protein Crunch Bar", market:"United Kingdom", flag:"Superlative claim — needs substantiation", status:"pending"},
+  {claim:"“Baked, not fried”", sku:"Baked Grain Puffs", market:"Brazil", flag:"Matches manufacturing spec, front-of-pack check passed", status:"approved"},
+  {claim:"“Halal certified”", sku:"Protein Trail Mix", market:"United Arab Emirates", flag:"Certificate on file, pending label-format review", status:"pending"},
+];
+function renderGovernance(){
+  document.getElementById('governanceRows').innerHTML = claims.map((c,i)=>`
+    <tr>
+      <td>${c.claim}</td>
+      <td>${c.sku}</td>
+      <td>${c.market}</td>
+      <td style="color:var(--slate);font-size:12.5px;">${c.flag}</td>
+      <td><span class="status-pill ${c.status}">${c.status.charAt(0).toUpperCase()+c.status.slice(1)}</span></td>
+      <td>${c.status==='approved' ? '' : `<button class="btn approve small" onclick="approveClaim(${i})">Approve</button>`}</td>
+    </tr>`).join('');
+}
+function approveClaim(i){ claims[i].status = 'approved'; claims[i].flag = 'Approved by Alex M.'; renderGovernance(); }
+renderGovernance();
+</script>
+</body>
+</html>
